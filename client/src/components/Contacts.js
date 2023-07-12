@@ -2,20 +2,15 @@ import React, { useEffect, useState } from 'react'
 import ContactsHeader from './ContactsHeader'
 import { useSelector, useDispatch } from 'react-redux'
 import { setUsers, changeSelectedUser } from '../redux/userSlice'
+import { checkUserOnline,checkNotificationsCount } from '../utils/utils'
 const Contacts = () => {
     let [contactsSearch, setContactsSearch] = useState("")
     let dispatch = useDispatch()
-    let users = useSelector((state) => {
-        return state.user.users
-    })
-    let activeUser = useSelector((state) => {
-        return state.user.user
-    })
-    let selectedUser = useSelector((state) => {
-        return state.user.selectedUser
-    })
-    let onlineUsers=useSelector((state)=>{return state.user.onlineUsers})
-    console.log(onlineUsers)
+    let notifications = useSelector((state) => { return state.user.userNotifications })
+    let users = useSelector((state) => { return state.user.users })
+    let activeUser = useSelector((state) => { return state.user.user })
+    let selectedUser = useSelector((state) => { return state.user.selectedUser })
+    let onlineUsers = useSelector((state) => { return state.user.onlineUsers })
     let fetchAllContacts = async () => {
         let res = await fetch('/api/users')
         let response = await res.json()
@@ -28,15 +23,6 @@ const Contacts = () => {
         }
         else {
             let { error } = { response }
-            console.log(error)
-        }
-    }
-   let checkUserOnline=(id)=>{
-        let checkUser= onlineUsers.find((user)=>{
-            return user.userId===id
-        })
-        if(checkUser){
-            return <div></div>
         }
     }
     useEffect(() => {
@@ -57,11 +43,12 @@ const Contacts = () => {
                             <li><img src={user.profilePicture} className="user-profile-image" alt="User-Profile" /></li>
                             <li className='user-contact-credentials'>
                                 <ul>
-                                <li className="user-name">{user.name}</li>
-                                <li className="username">@{user.username}</li>
+                                    <li className="user-name">{user.name}</li>
+                                    <li className="username">@{user.username}</li>
                                 </ul>
                             </li>
-                            <li className='online-user-sign'>{checkUserOnline(user._id)}</li>
+                            <li className='online-user-sign'>{checkUserOnline(user._id, onlineUsers)}</li>
+                            <li className='user-notifications-count'><span className="badge bg-secondary">{checkNotificationsCount(activeUser._id,user._id, notifications)}</span></li>
                         </ul>
                     </div>
                 })}

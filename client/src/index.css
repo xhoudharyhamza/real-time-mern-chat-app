@@ -109,13 +109,13 @@ html {
 }
 .contact-header-list .user-profile-picture,
 .chat-header-list .selected-user-profile-picture img {
-  width: 50px;
-  height: 50px;
-  border-radius: 25px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
   cursor: pointer;
 }
 .contact-header-list ul li {
-  margin: 0px 8px;
+  margin: 0px 6px;
   color: white;
   font-weight: 500;
 }
@@ -134,6 +134,10 @@ html {
   background: #c8c9ca;
   padding: 3px 10px;
   border-radius: 3px;
+}
+.contact-header-list .notification-icon img{
+  width: 25px;
+  cursor: pointer;
 }
 .contacts {
   padding: 5px 10px;
@@ -194,6 +198,9 @@ html {
 .user-contact-credentials ul li {
   margin: 0;
   padding: 0;
+}
+.user-notifications-count{
+  margin-left: auto;
 }
 /* if no contact is selected than the styles of chat side content  */
 .container {

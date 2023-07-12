@@ -4,7 +4,8 @@ let initialState = {
     user: null,
     users:[],
     selectedUser:null,
-    onlineUsers:[]
+    onlineUsers:[],
+    userNotifications:[]
 }
 let userSlice = createSlice({
     name: "user",
@@ -26,9 +27,12 @@ let userSlice = createSlice({
         },
         setOnlineUsers:(state,action)=>{
             state.onlineUsers=action.payload
+        },
+        setUserNotifications:(state,action)=>{
+            state.userNotifications=action.payload
         }
     }
 
 })
-export let { setUser,setUsers, changeSelectedUser,logoutUser,setOnlineUsers } = userSlice.actions
+export let { setUser,setUsers, changeSelectedUser,logoutUser,setOnlineUsers,setUserNotifications } = userSlice.actions
 export default userSlice.reducer

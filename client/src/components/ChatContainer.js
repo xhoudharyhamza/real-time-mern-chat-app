@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import ChatHeader from './ChatHeader';
 import ChatForm from './ChatForm';
 import { useSelector } from 'react-redux';
-
+import { setUserNotifications } from '../redux/userSlice';
+import { useDispatch } from 'react-redux';
 const ChatContainer = ({ socket }) => {
+  let dispatch=useDispatch()
   const senderId = useSelector((state) => state.user.user._id);
   const receiverId = useSelector((state) => state.user.selectedUser._id);
   const [chat, setChat] = useState([]);
@@ -23,59 +25,55 @@ const ChatContainer = ({ socket }) => {
       console.log(error);
     }
   };
-
+  let deleteNotifications=async()=>{
+    let res= await fetch(`/api/notifications/${receiverId}/${senderId}`,{method:"DELETE"})
+    if(res.status===200){
+      let {notifications}=await res.json()
+      dispatch(setUserNotifications(notifications))
+    }
+  }
   const addNewMessage = (message) => {
     setChat((prevChat) => [...prevChat, message]);
   };
-
+  useEffect(()=>{
+    deleteNotifications()
+  },[])
   useEffect(() => {
     fetchAllMessages();
   }, [senderId, receiverId]);
 
   useEffect(() => {
     if (socket) {
-      socket.on('receiveMessage', handleReceivedMessage);
+      socket.on('receiveMessage', (message) => {
+        const msg = {
+          members: [message.sender, message.receiver],
+          sender: message.sender,
+          message: message.message,
+        };
+        addNewMessage(msg);
+      });
     }
-    return () => {
-      if (socket) {
-        socket.off('receiveMessage', handleReceivedMessage);
-      }
-    };
   }, [socket]);
 
-  const handleReceivedMessage = (message) => {
-    const msg = {
-      members: [message.sender, message.receiver],
-      sender: message.sender,
-      message: message.message,
-    };
-    addNewMessage(msg);
-  };
-
   useEffect(() => {
-    if (chatMessagesRef.current) {
-      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
-    }
+    chatMessagesRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [chat]);
 
   return (
     <div className='chat-container'>
       <ChatHeader />
-      <div className='chat-messages' ref={chatMessagesRef}>
-        {chat.length > 0 &&
-          chat.map((message, index) => {
-            return message.sender === senderId ? (
-              <div className='message-sender' key={index}>
-                <span>{message.message}</span>
-              </div>
-            ) : (
-              <div className='message-receiver' key={index}>
-                <span>{message.message}</span>
-              </div>
-            );
-          })}
+      <div className='chat-messages'>
+        {chat.map((message, index) => (
+          <div
+            key={index}
+            className={message.sender === senderId ? 'message-sender' : 'message-receiver'}
+          >
+            <span>{message.message}</span>
+          </div>
+        ))}
       </div>
       <ChatForm addNewMessage={addNewMessage} socket={socket} />
+      <div ref={chatMessagesRef} />
     </div>
   );
 };

@@ -5,6 +5,8 @@ let dotenv = require("dotenv")
 let userRoutes = require('./routes/userRoutes')
 let messageRoutes = require("./routes/messageRoutes")
 const { Server } = require("socket.io");
+let Notification= require('./models/notificationModel')
+let notificationRoutes= require('./routes/notificationRoutes')
 dotenv.config()
 mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true,
@@ -17,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use(express.json())
 app.use("/api", userRoutes)
 app.use('/api', messageRoutes)
+app.use('/api', notificationRoutes)
 let server = app.listen(process.env.PORT, () => {
   console.log(`server is running at port: ${process.env.PORT}`)
 })
@@ -35,11 +38,14 @@ io.on("connection", (socket) => {
       }
       io.emit("getUsers", activeUsers);
     });
-    socket.on("newMessage", ({ message, sender, receiver }) => {
-      console.log(message,sender,receiver)
+    socket.on("newMessage", async ({ message, sender, receiver }) => {
       const isReceiverOnline = activeUsers.find((user) => user.userId === receiver);
       if (isReceiverOnline) {
         io.to(isReceiverOnline.socketId).emit("receiveMessage", { message, sender, receiver });
+      }
+      else{
+        let notification= await new Notification({sender,receiver,message})
+        notification.save()
       }
     });
     
